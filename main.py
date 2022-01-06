@@ -14,11 +14,16 @@ def test_route():
 
 @app.route("/rand-words")
 def get_random_words():
+  randWordResponse = dict()
   words = []
   with open('words.txt', 'r') as f:
     words = f.readlines()
+    words = [word.rstrip() for word in words]
   random.shuffle(words)
-  return " ".join(words[0:40])
+  sizedWordsResponse = words[0:40]
+  for i, word in enumerate(sizedWordsResponse):
+    randWordResponse[i] = word
+  return randWordResponse
     
 
 app.run()
