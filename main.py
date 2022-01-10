@@ -2,7 +2,6 @@ from flask import Flask, request
 from flask_cors import CORS
 import random
 import logging
-import sys
 
 
 app = Flask(__name__)
@@ -41,6 +40,4 @@ def test_results():
   response['typedWords'] = typedWords
   return response
   
-    
-
 app.run()
