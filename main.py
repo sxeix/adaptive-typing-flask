@@ -1,11 +1,10 @@
 from flask import Flask, request
 from flask_cors import CORS
-import random
 import logging
 from difflib import SequenceMatcher
 import re
 from markov import Markov, calculate_error, find_focus_sets
-
+from data_handling_tools import get_wordset
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins":"*"}})
@@ -14,6 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 userAgent = Markov('user')
 expectedAgent = Markov('expected')
+current_focus_set = []
   
 @app.route("/basic")
 def test_route():
@@ -23,16 +23,12 @@ def test_route():
 
 @app.route("/rand-words")
 def get_random_words():
-  randWordResponse = dict()
-  words = []
-  with open('words.txt', 'r') as f:
-    words = f.readlines()
-    words = [word.rstrip() for word in words]
-  random.shuffle(words)
-  sizedWordsResponse = words[0:40]
-  for i, word in enumerate(sizedWordsResponse):
-    randWordResponse[i] = word
-  return randWordResponse
+  return get_wordset(40, [])
+
+@app.route("/tailored-wordset")
+def get_tailored_words():
+  # Need to pass in the focus_set here
+  return get_wordset(40, current_focus_set)
 
 @app.route("/test-result", methods=['POST', 'GET'])
 def test_results():
@@ -52,6 +48,8 @@ def test_results():
   focus_set = find_focus_sets(expectedAgent, error)
   # app.logger.info(error)
   # app.logger.info(focus_set)
+  
+  current_focus_set = focus_set
 
   response = dict()
   response['result'] = 'success'
