@@ -3,8 +3,6 @@ from difflib import SequenceMatcher
 import re
 import json
 import os
-from this import d
-from xml.dom.minidom import CharacterData
 
 def get_wordset(length: int, focus_set: list):
     response = dict()
@@ -93,9 +91,10 @@ def preprocess_user_results(typed: list, expected: list):
 
 def load_user(username: str):
     path = os.path.expanduser('~/Documents') + f"/AdaptiveTyping/{username}.json"
-    if os.path.exists(path):    
+    if os.path.exists(path):
         file = open(path)
         data = json.load(file)
+        file.close()
         return data
     return None
 
