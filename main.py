@@ -4,6 +4,7 @@ import random
 import logging
 from difflib import SequenceMatcher
 import re
+from markov import Markov, calculate_error, find_focus_sets
 
 
 app = Flask(__name__)
@@ -11,6 +12,9 @@ cors = CORS(app, resources={r"/*": {"origins":"*"}})
 
 logging.basicConfig(level=logging.DEBUG)
 
+userAgent = Markov('user')
+expectedAgent = Markov('expected')
+  
 @app.route("/basic")
 def test_route():
   basicResponse = dict()
@@ -33,17 +37,27 @@ def get_random_words():
 @app.route("/test-result", methods=['POST', 'GET'])
 def test_results():
   responseJson = request.get_json()
-  # Need to preprocess the words to remove anomalies
   testWords = responseJson.get('actual')
   typedWords = responseJson.get('typed')
-  app.logger.info(testWords)
+
   userSet, expectedSet = preprocess_user_results(typedWords, testWords)
+  
+  # app.logger.info(userSet)
+  # app.logger.info(expectedSet)
+  
+  userAgent.train(userSet)
+  expectedAgent.train(expectedSet)
+
+  error = calculate_error(expectedAgent, userAgent)
+  focus_set = find_focus_sets(expectedAgent, error)
+  # app.logger.info(error)
+  # app.logger.info(focus_set)
+
   response = dict()
   response['result'] = 'success'
-  # response['typedWords'] = typedWords
-  # response['testWords'] = testWords
   response['typedWords'] = userSet
   response['testWords'] = expectedSet
+  response['focus-sets'] = focus_set
   return response
 
 
@@ -65,7 +79,6 @@ def preprocess_user_results(typed: list, expected: list):
       containsIntegers = re.search('\d', typedWord)
       containsSpecialChars = any(char in "!@#$%^&*()-+?_=,<>/" for char in typedWord)
       if similarity >= 0.7 and not (containsIntegers or containsSpecialChars):
-        app.logger.info('has ran here ' + typedWord)
         expectedFormatted.append(expectedWord)
         userFormatted.append(typedWord)
 
