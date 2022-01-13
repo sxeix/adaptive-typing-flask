@@ -1,6 +1,10 @@
 import random
 from difflib import SequenceMatcher
 import re
+import json
+import os
+from this import d
+from xml.dom.minidom import CharacterData
 
 def get_wordset(length: int, focus_set: list):
     response = dict()
@@ -19,15 +23,17 @@ def get_wordset(length: int, focus_set: list):
 
 
 def get_tailored_words(focus_set: list, length: int):
-    charaterCombos = []
+    characterCombos = []
     containsThree = []
     containsTwo = []
     containsOne = []
     for tup in focus_set:
-        charaterCombos.append(tup[0] + tup[1])
+        characterCombos.append(tup[0] + tup[1])
     words = read_words()
     random.shuffle(words)
-    a, b, c = charaterCombos
+    if len(characterCombos != 3):
+        return get_wordset(length, [])
+    a, b, c = characterCombos
     for word in words:
         wordContainsCombo = [a in word, b in word, c in word]
         containsCount = 0
@@ -60,6 +66,7 @@ def read_words():
         words = [word.rstrip() for word in words]
     return words
 
+
 def preprocess_user_results(typed: list, expected: list):
     expectedFormatted = list()
     userFormatted = list()
@@ -83,3 +90,24 @@ def preprocess_user_results(typed: list, expected: list):
                 expectedFormatted.append(expectedWord)
                 userFormatted.append(typedWord)
     return userFormatted, expectedFormatted
+
+def load_user(username: str):
+    path = os.path.expanduser('~/Documents') + f"/AdaptiveTyping/{username}.json"
+    file = open(path)
+    data = json.load(file)
+    return data
+
+def save_data(username: str, typedHistory: list, expectedHistory: list):
+    path = os.path.expanduser('~/Documents') + f"/AdaptiveTyping/{username}.json"
+    
+    data = dict()
+    data['typed'] = typedHistory
+    data['expected'] = expectedHistory
+    
+    with open(path, 'w') as file:
+        json.dump(data, file, indent=4)
+
+def get_data_lists(savedata):
+    userHistory = savedata['typed']
+    expectedHistory = savedata['expected']
+    return userHistory, expectedHistory
