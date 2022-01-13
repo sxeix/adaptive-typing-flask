@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS
 import logging
 from markov import Markov, calculate_error, find_focus_sets
-from data_handling_tools import get_wordset, preprocess_user_results
+from data_handling_tools import get_wordset, preprocess_user_results, load_user, get_data_lists, save_data
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -12,6 +12,7 @@ logging.basicConfig(level=logging.DEBUG)
 userAgent = Markov("user")
 expectedAgent = Markov("expected")
 
+current_user = 'testuser'
 
 @app.route("/basic")
 def test_route():
@@ -37,7 +38,7 @@ def get_tailored_words():
     if valid_set:
         return get_wordset(30, focus_set)
     else:
-        return get_wordset(40, [])
+        return get_wordset(30, [])
 
 
 @app.route("/test-result", methods=["POST", "GET"])
@@ -64,8 +65,21 @@ def test_results():
     response["typedWords"] = userSet
     response["testWords"] = expectedSet
     response["focus-sets"] = focus_set
+    
+    save_data(current_user, userAgent.get_history(), expectedAgent.get_history())
+    
     return response
 
 
+@app.before_first_request
+def startup():
+    data = load_user(current_user)
+    if not data == None:
+        userHistory, expectedHistory = get_data_lists(data)
+        userAgent.train(userHistory)
+        expectedAgent.train(expectedHistory)
+    
 
-app.run()
+if __name__ == '__main__':
+    print(app.before_first_request_funcs)
+    app.run()
