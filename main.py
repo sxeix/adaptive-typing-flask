@@ -1,11 +1,10 @@
 from flask import Flask, request
 from flask_cors import CORS
-import random
 import logging
 from difflib import SequenceMatcher
 import re
 from markov import Markov, calculate_error, find_focus_sets
-
+from data_handling_tools import get_wordset
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins":"*"}})
@@ -23,16 +22,13 @@ def test_route():
 
 @app.route("/rand-words")
 def get_random_words():
-  randWordResponse = dict()
-  words = []
-  with open('words.txt', 'r') as f:
-    words = f.readlines()
-    words = [word.rstrip() for word in words]
-  random.shuffle(words)
-  sizedWordsResponse = words[0:40]
-  for i, word in enumerate(sizedWordsResponse):
-    randWordResponse[i] = word
-  return randWordResponse
+  return get_wordset(40, [])
+
+@app.route("/tailored-wordset")
+def get_tailored_words():
+  error = calculate_error(expectedAgent, userAgent)
+  focus_set = find_focus_sets(expectedAgent, error)
+  return get_wordset(30, focus_set)
 
 @app.route("/test-result", methods=['POST', 'GET'])
 def test_results():
