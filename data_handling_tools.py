@@ -29,7 +29,7 @@ def get_tailored_words(focus_set: list, length: int):
         characterCombos.append(tup[0] + tup[1])
     words = read_words()
     random.shuffle(words)
-    if len(characterCombos != 3):
+    if len(characterCombos) != 3:
         return get_wordset(length, [])
     a, b, c = characterCombos
     for word in words:
