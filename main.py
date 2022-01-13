@@ -38,7 +38,7 @@ def get_tailored_words():
     if valid_set:
         return get_wordset(30, focus_set)
     else:
-        return get_wordset(40, [])
+        return get_wordset(30, [])
 
 
 @app.route("/test-result", methods=["POST", "GET"])
@@ -74,9 +74,10 @@ def test_results():
 @app.before_first_request
 def startup():
     data = load_user(current_user)
-    userHistory, expectedHistory = get_data_lists(data)
-    userAgent.train(userHistory)
-    expectedAgent.train(expectedHistory)
+    if not data == None:
+        userHistory, expectedHistory = get_data_lists(data)
+        userAgent.train(userHistory)
+        expectedAgent.train(expectedHistory)
     
 
 if __name__ == '__main__':

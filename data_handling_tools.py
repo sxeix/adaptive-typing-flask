@@ -93,18 +93,21 @@ def preprocess_user_results(typed: list, expected: list):
 
 def load_user(username: str):
     path = os.path.expanduser('~/Documents') + f"/AdaptiveTyping/{username}.json"
-    file = open(path)
-    data = json.load(file)
-    return data
+    if os.path.exists(path):    
+        file = open(path)
+        data = json.load(file)
+        return data
+    return None
 
 def save_data(username: str, typedHistory: list, expectedHistory: list):
-    path = os.path.expanduser('~/Documents') + f"/AdaptiveTyping/{username}.json"
-    
+    filename = f'/{username}.json'
+    path = os.path.expanduser('~/Documents/AdaptiveTyping')
+    if not os.path.exists(path):
+        os.makedirs(path)
     data = dict()
     data['typed'] = typedHistory
     data['expected'] = expectedHistory
-    
-    with open(path, 'w') as file:
+    with open(path+filename, 'w+') as file:
         json.dump(data, file, indent=4)
 
 def get_data_lists(savedata):
