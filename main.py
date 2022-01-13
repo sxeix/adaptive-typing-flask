@@ -13,7 +13,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 userAgent = Markov('user')
 expectedAgent = Markov('expected')
-current_focus_set = []
   
 @app.route("/basic")
 def test_route():
@@ -28,7 +27,10 @@ def get_random_words():
 @app.route("/tailored-wordset")
 def get_tailored_words():
   # Need to pass in the focus_set here
-  return get_wordset(40, current_focus_set)
+  error = calculate_error(expectedAgent, userAgent)
+  focus_set = find_focus_sets(expectedAgent, error)
+  app.logger.info(focus_set)
+  return get_wordset(10, focus_set)
 
 @app.route("/test-result", methods=['POST', 'GET'])
 def test_results():
@@ -49,7 +51,6 @@ def test_results():
   # app.logger.info(error)
   # app.logger.info(focus_set)
   
-  current_focus_set = focus_set
 
   response = dict()
   response['result'] = 'success'
