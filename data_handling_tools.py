@@ -8,11 +8,7 @@ def get_wordset(length: int, focus_set: list):
     random.shuffle(words)
     selectedWords = words[0:length]
   elif focus_set:
-    # insert code here to select appropriate words
-    # replace random.shuffle
     response["focus_set"] = focus_set
-    # random.shuffle(words)
-    # selectedWords = words[0:length]
     selectedWords = get_tailored_words(focus_set, length)
   response["words"] = {}
   for i, word in enumerate(selectedWords):
