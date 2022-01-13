@@ -30,7 +30,14 @@ def get_tailored_words():
     error = calculate_error(expectedAgent, userAgent)
     focus_set = find_focus_sets(expectedAgent, error)
     # Should be a good idea to ensure each combo in the focus_set certainly has a % more than 0
-    return get_wordset(30, focus_set)
+    valid_set = True
+    for item in focus_set:
+        if item[2] == 0:
+            valid_set = False
+    if valid_set:
+        return get_wordset(30, focus_set)
+    else:
+        return get_wordset(40, [])
 
 
 @app.route("/test-result", methods=["POST", "GET"])
