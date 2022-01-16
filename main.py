@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS
 import logging
 from markov import Markov, calculate_error, find_focus_sets
-from data_handling_tools import get_wordset, preprocess_user_results, load_user, get_data_lists, save_data
+from data_handling_tools import get_wordset, preprocess_user_results, load_user, get_data_lists, save_data, find_users
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -94,7 +94,11 @@ def change_user():
     
 @app.route("/get-users")    
 def get_users():
-    pass
+    userList = find_users()
+    app.logger.info(userList)
+    response = dict()
+    response["users"] = userList
+    return response
 
 @app.before_first_request
 def startup():

@@ -3,6 +3,7 @@ from difflib import SequenceMatcher
 import re
 import json
 import os
+from os import listdir
 
 def get_wordset(length: int, focus_set: list):
     response = dict()
@@ -113,3 +114,11 @@ def get_data_lists(savedata):
     userHistory = savedata['typed']
     expectedHistory = savedata['expected']
     return userHistory, expectedHistory
+
+def find_users():
+    path = os.path.expanduser('~/Documents/AdaptiveTyping')
+    files = listdir(path)
+    trimmed_files = []
+    for file in files:
+        trimmed_files.append(file[:len(file)-5])
+    return trimmed_files
