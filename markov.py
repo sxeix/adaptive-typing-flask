@@ -1,3 +1,7 @@
+"""
+Markov model implementation that is used to observe a user's typing.
+What is learnt can then be compared to what their Markov transition model should have looked like and highlight errors.
+"""
 import pandas as pd
 import numpy as np
 import sys

@@ -1,3 +1,7 @@
+"""
+Set of various functions that the main flask app depends on to function properly.
+Mostly for generating wordsets & saving/loading data.
+"""
 import random
 from difflib import SequenceMatcher
 import re
