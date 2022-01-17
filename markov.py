@@ -1,10 +1,19 @@
-import pandas as pd
-import numpy as np
+"""
+Markov model implementation that is used to observe a user's typing.
+What is learnt can then be compared to what their Markov transition model
+should have looked like and highlight errors.
+"""
 import sys
+
+import numpy as np
+import pandas as pd
 
 np.set_printoptions(threshold=sys.maxsize)
 
 class Markov:
+    """
+    Markov tranisition matrix class
+    """
 
     __name = ""
     __model = {}
@@ -55,7 +64,8 @@ class Markov:
                     if self.__model.get(word[i]):
                         if self.__model[word[i]].get(word[i + 1]):
                             self.__model[word[i]][word[i + 1]]["count"] = (
-                                int(self.__model[word[i]][word[i + 1]]["count"]) + 1
+                                int(self.__model[word[i]]
+                                    [word[i + 1]]["count"]) + 1
                             )
                         else:
                             self.__model[word[i]][word[i + 1]] = {"count": 1}
@@ -72,8 +82,9 @@ class Markov:
             for _, character in val.items():
                 total_count += character["count"]
             for second_char, second_char_count_dict in val.items():
-                P = float(second_char_count_dict["count"]) / float(total_count)
-                self.__model[first_char][second_char]["P"] = P
+                percentage = float(
+                    second_char_count_dict["count"]) / float(total_count)
+                self.__model[first_char][second_char]["P"] = percentage # pylint: disable=unnecessary-dict-index-lookup
         self.__calculate_current_transition_matrix()
 
     def __calculate_current_transition_matrix(self):
@@ -85,11 +96,11 @@ class Markov:
             else:
                 transitions = []
                 first_char = self.__model[char_state]
-                for c in self.__states:
-                    if not first_char.get(c):
+                for char in self.__states:
+                    if not first_char.get(char):
                         transitions.append(0)
                     else:
-                        transitions.append(first_char[c]["P"])
+                        transitions.append(first_char[char]["P"])
                 self.__matrix_arr.append(transitions)
         self.__update_matrix()
 
@@ -106,9 +117,10 @@ class Markov:
         return self.__name
 
     def print_matrix(self):
-        df = pd.DataFrame(self.__matrix, columns=self.__states, index=self.__states)
+        dataframe = pd.DataFrame(
+            self.__matrix, columns=self.__states, index=self.__states)
         print("\n" + self.__name.upper())
-        print(df)
+        print(dataframe)
 
     def get_states(self):
         return self.__states
@@ -117,28 +129,29 @@ class Markov:
         return self.__model
 
 
-def compare_matrices(m1, m2):
-    difference_matrix = np.subtract(m1.get_matrix(), m2.get_matrix())
+def compare_matrices(markov_1, markov_2):
+    difference_matrix = np.subtract(
+        markov_1.get_matrix(), markov_2.get_matrix())
     # print('\n' + 'DIFFERENCE')
-    print_matrix(difference_matrix, m1.get_states())
+    print_matrix(difference_matrix, markov_1.get_states())
 
 
-def calculate_error(m1, m2):
+def calculate_error(markov_1, markov_2):
     # print("\n CALCULATED ERROR")
-    sub = np.subtract(m1.get_matrix(), m2.get_matrix())
+    sub = np.subtract(markov_1.get_matrix(), markov_2.get_matrix())
     divided = np.divide(
-        sub, m1.get_matrix(), out=np.zeros_like(sub), where=m1.get_matrix() != 0
+        sub, markov_1.get_matrix(), out=np.zeros_like(sub), where=markov_1.get_matrix() != 0
     )
     result = np.multiply(
         divided, 100
     )  # This occurs to create a percent out of 100 - might be easier to leave as decimal
-    # print_matrix(result, m1.get_states())
+    # print_matrix(result, markov_1.get_states())
     return result
 
 
-def print_matrix(m, s):
-    df = pd.DataFrame(m, columns=s, index=s)
-    print(df)
+def print_matrix(matrix, size):
+    dataframe = pd.DataFrame(matrix, columns=size, index=size)
+    print(dataframe)
 
 
 def find_focus_sets(markov, matrix):

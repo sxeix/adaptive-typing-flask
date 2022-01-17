@@ -1,119 +1,130 @@
-import random
-from difflib import SequenceMatcher
-import re
+"""
+Set of various functions that the main flask app depends on to function properly.
+Mostly for generating wordsets & saving/loading data.
+"""
 import json
 import os
+import random
+import re
+from difflib import SequenceMatcher
 from os import listdir
 
+
 def get_wordset(length: int, focus_set: list):
-    response = dict()
+    response = {}
     words = read_words()
-    selectedWords = []
+    selected_words = []
     if not focus_set:
         random.shuffle(words)
-        selectedWords = words[0:length]
+        selected_words = words[0:length]
     elif focus_set:
         response["focus_set"] = focus_set
-        selectedWords = get_tailored_words(focus_set, length)
+        selected_words = get_tailored_words(focus_set, length)
     response["words"] = {}
-    for i, word in enumerate(selectedWords):
+    for i, word in enumerate(selected_words):
         response["words"][i] = word
     return response
 
 
 def get_tailored_words(focus_set: list, length: int):
-    characterCombos = []
-    containsThree = []
-    containsTwo = []
-    containsOne = []
+    character_combos = []
+    contains = {}
+    contains['1']= []
+    contains['2']= []
+    contains['3']= []
     for tup in focus_set:
-        characterCombos.append(tup[0] + tup[1])
+        character_combos.append(tup[0] + tup[1])
     words = read_words()
     random.shuffle(words)
-    if len(characterCombos) != 3:
+    if len(character_combos) != 3:
         return get_wordset(length, [])
-    a, b, c = characterCombos
+    char_a, char_b, char_c = character_combos # pylint: disable=unbalanced-tuple-unpacking
     for word in words:
-        wordContainsCombo = [a in word, b in word, c in word]
-        containsCount = 0
-        for x in wordContainsCombo:
-            if x == True:
-                containsCount += 1
-        if containsCount == 3:
-            containsThree.append(word)
-        elif containsCount == 2:
-            containsTwo.append(word)
-        elif containsCount == 1:
-            containsOne.append(word)
-    totalContains = containsThree + containsTwo + containsOne
-    if len(totalContains) > length:
-        totalContains = totalContains[0:length]
-    elif len(totalContains) < length:
-        neededWords = length - len(totalContains)
-        while neededWords > 0:
-            if not words[neededWords] in totalContains:
-                totalContains.append(word[neededWords])
-                neededWords -= 1
-    random.shuffle(totalContains)
-    return totalContains
+        word_contains_combo = [char_a in word, char_b in word, char_c in word]
+        countains_count = 0
+        for char_combo in word_contains_combo:
+            if char_combo is True:
+                countains_count += 1
+        if countains_count == 3:
+            contains['3'].append(word)
+        elif countains_count == 2:
+            contains['2'].append(word)
+        elif countains_count == 1:
+            contains['1'].append(word)
+    total_contains = contains['3'] + contains['2'] + contains['1']
+    if len(total_contains) > length:
+        total_contains = total_contains[0:length]
+    elif len(total_contains) < length:
+        needed_words = length - len(total_contains)
+        while needed_words > 0:
+            if not words[needed_words] in total_contains:
+                total_contains.append(words[needed_words])
+                needed_words -= 1
+    random.shuffle(total_contains)
+    return total_contains
 
 
 def read_words():
     words = []
-    with open("words.txt", "r") as f:
-        words = f.readlines()
+    with open("words.txt", "r", encoding='UTF-8') as file:
+        words = file.readlines()
         words = [word.rstrip() for word in words]
     return words
 
 
 def preprocess_user_results(typed: list, expected: list):
-    expectedFormatted = list()
-    userFormatted = list()
-    for i, tWord in enumerate(typed):
-        typedWord = tWord.lower()
-        expectedWord = expected[i].lower()
-        if typedWord == expectedWord:
-            expectedFormatted.append(expectedWord)
-            userFormatted.append(typedWord)
-        elif typedWord != expectedWord:
+    expected_formatted_word = []
+    user_formatted = []
+    for i, pre_process_typed_word in enumerate(typed):
+        typed_word = pre_process_typed_word.lower()
+        expected_word = expected[i].lower()
+        if typed_word == expected_word:
+            expected_formatted_word.append(expected_word)
+            user_formatted.append(typed_word)
+        elif typed_word != expected_word:
             # caluclate similarity of two strings
             # only cater if they are more than 70% similar
             # might need to improve this
             # also checks that there's no integers in the word
-            similarity = SequenceMatcher(None, typedWord, expectedWord).ratio()
-            containsIntegers = re.search("\d", typedWord)
-            containsSpecialChars = any(
-                char in "!@#$%^&*()-+?_=,<>/" for char in typedWord
+            similarity = SequenceMatcher(None, typed_word, expected_word).ratio()
+            contains_integers = re.search(r"\d", typed_word)
+            contains_special_chars = any(
+                char in "!@#$%^&*()-+?_=,<>/" for char in typed_word
             )
-            if similarity >= 0.7 and not (containsIntegers or containsSpecialChars):
-                expectedFormatted.append(expectedWord)
-                userFormatted.append(typedWord)
-    return userFormatted, expectedFormatted
+            if similarity >= 0.7 and not (contains_integers or contains_special_chars):
+                expected_formatted_word.append(expected_word)
+                user_formatted.append(typed_word)
+    return user_formatted, expected_formatted_word
+
 
 def load_user(username: str):
-    path = os.path.expanduser('~/Documents') + f"/AdaptiveTyping/{username}.json"
+    path = os.path.expanduser('~/Documents') + \
+        f"/AdaptiveTyping/{username}.json"
     if os.path.exists(path):
-        file = open(path)
-        data = json.load(file)
-        file.close()
+        with open(path, encoding='UTF-8') as file:
+        # file = open(path, encoding='UTF-8')
+            data = json.load(file)
         return data
     return None
 
-def save_data(username: str, typedHistory: list, expectedHistory: list):
+
+def save_data(username: str, typed_history: list, expected_history: list):
     filename = f'/{username}.json'
     path = os.path.expanduser('~/Documents/AdaptiveTyping')
     if not os.path.exists(path):
         os.makedirs(path)
-    data = dict()
-    data['typed'] = typedHistory
-    data['expected'] = expectedHistory
-    with open(path+filename, 'w+') as file:
+    data = {}
+    data['typed'] = typed_history
+    data['expected'] = expected_history
+    with open(path+filename, 'w+', encoding='UTF-8') as file:
         json.dump(data, file, indent=4)
 
+
 def get_data_lists(savedata):
-    userHistory = savedata['typed']
-    expectedHistory = savedata['expected']
-    return userHistory, expectedHistory
+    user_history = savedata['typed']
+    expected_history = savedata['expected']
+    return user_history, expected_history
+
 
 def find_users():
     path = os.path.expanduser('~/Documents/AdaptiveTyping')
