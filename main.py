@@ -66,6 +66,7 @@ def test_results():
     test_words = response_json.get("actual")
     typed_words = response_json.get("typed")
     user = response_json.get("user")
+    stats = response_json.get("stats")
     user_agent, expected_agent = get_current_user(user)
     user_set, expected_set = preprocess_user_results(typed_words, test_words)
 
@@ -87,7 +88,8 @@ def test_results():
     response["test_words"] = expected_set
     response["focus-sets"] = focus_set
 
-    save_data(user, user_agent.get_history(), expected_agent.get_history())
+    app.logger.info(stats)
+    save_data(user, user_agent.get_history(), expected_agent.get_history(), stats)
 
     return response
 
