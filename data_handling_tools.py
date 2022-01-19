@@ -108,8 +108,9 @@ def load_user(username: str):
     return None
 
 
-def save_data(username: str, typed_history: list, expected_history: list):
+def save_data(username: str, typed_history: list, expected_history: list, stats: dict):
     filename = f'/{username}.json'
+    stats_filename = f'/{username}_stats.json'
     path = os.path.expanduser('~/Documents/AdaptiveTyping')
     if not os.path.exists(path):
         os.makedirs(path)
@@ -118,6 +119,19 @@ def save_data(username: str, typed_history: list, expected_history: list):
     data['expected'] = expected_history
     with open(path+filename, 'w+', encoding='UTF-8') as file:
         json.dump(data, file, indent=4)
+    # Use a second file for the statistics
+    # Must only save if there is a focus-set involved in the test
+    if not stats.get('focus-set'):
+        return
+    if not os.path.isfile(path+stats_filename):
+        with open(path+stats_filename, mode='w+', encoding='UTF-8') as file:
+            json.dump([stats], file, indent=4)
+    else:
+        with open(path+stats_filename, mode='r', encoding='UTF-8') as file:
+            stat_history = json.load(file)
+            stat_history.append(stats)
+        with open(path+stats_filename, mode='w', encoding='UTF-8') as file:
+            json.dump(stat_history, file, indent=4)
 
 
 def get_data_lists(savedata):
@@ -127,9 +141,14 @@ def get_data_lists(savedata):
 
 
 def find_users():
+    # Need to test that if the logic fixes the issue listed on Github
     path = os.path.expanduser('~/Documents/AdaptiveTyping')
-    files = listdir(path)
-    trimmed_files = []
-    for file in files:
-        trimmed_files.append(file[:len(file)-5])
-    return trimmed_files
+    if os.path.exists(path) and len(listdir(path)) > 1:
+        files = listdir(path)
+        trimmed_files = []
+        for file in files:
+            trimmed_file = file[:len(file)-5]
+            if not '_stats' in trimmed_file:
+                trimmed_files.append(file[:len(file)-5])
+        return trimmed_files
+    return []
