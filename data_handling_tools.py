@@ -120,6 +120,9 @@ def save_data(username: str, typed_history: list, expected_history: list, stats:
     with open(path+filename, 'w+', encoding='UTF-8') as file:
         json.dump(data, file, indent=4)
     # Use a second file for the statistics
+    # Must only save if there is a focus-set involved in the test
+    if not stats.get('focus-set'):
+        return
     if not os.path.isfile(path+stats_filename):
         with open(path+stats_filename, mode='w+', encoding='UTF-8') as file:
             json.dump([stats], file, indent=4)
