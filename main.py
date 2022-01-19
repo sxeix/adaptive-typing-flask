@@ -2,12 +2,14 @@
 Flask application for controlling communication to and from the UI of the AdaptiveTyping app
 """
 import logging
+from urllib import response
 
 from flask import Flask, request
 from flask_cors import CORS
 
 from data_handling_tools import (find_users, get_data_lists, get_wordset,
-                                 load_user, preprocess_user_results, save_data)
+                                 load_user, preprocess_user_results, save_data,
+                                 load_stats)
 from markov import Markov, calculate_error, find_focus_sets
 
 app = Flask(__name__)
@@ -114,6 +116,15 @@ def get_users():
     response["users"] = user_list
     return response
 
+@app.route("/get-user-stats", methods=["POST", "GET"])
+def get_user_stats():
+    response_json = request.get_json()
+    user = response_json.get('user')
+    user_stats = load_stats(user)
+    response = {}
+    response['user'] = user
+    response['stats'] = user_stats
+    return response
 
 @app.before_first_request
 def startup():
