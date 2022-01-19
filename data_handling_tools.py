@@ -144,6 +144,8 @@ def find_users():
         files = listdir(path)
         trimmed_files = []
         for file in files:
-            trimmed_files.append(file[:len(file)-5])
+            trimmed_file = file[:len(file)-5]
+            if not '_stats' in trimmed_file:
+                trimmed_files.append(file[:len(file)-5])
         return trimmed_files
     return []
