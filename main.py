@@ -2,7 +2,6 @@
 Flask application for controlling communication to and from the UI of the AdaptiveTyping app
 """
 import logging
-from urllib import response
 
 from flask import Flask, request
 from flask_cors import CORS

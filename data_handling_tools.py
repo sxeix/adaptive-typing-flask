@@ -155,10 +155,10 @@ def find_users():
 
 def load_stats(user: str):
     stats_filename = f'/{user}_stats.json'
-    path = os.path.expanduser('~/Documents/AdaptiveTyping')    
-    if not os.path.isfile(path+stats_filename):
-        return {}
-    else:
+    path = os.path.expanduser('~/Documents/AdaptiveTyping')
+    history = {}
+    if os.path.isfile(path+stats_filename):
         with open(path+stats_filename, mode='r', encoding='UTF-8') as file:
             stat_history = json.load(file)
-            return stat_history
+            history = stat_history
+    return history
