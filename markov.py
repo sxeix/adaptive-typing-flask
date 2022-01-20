@@ -164,10 +164,10 @@ def find_focus_sets(markov, matrix):
     for row in range(0, 25):
         for item in range(0, 25):
             # Count currently does nothing when it comes to being used in this case
-            # Consider dropping values completely if their count is under '3' for example
+            # Consider dropping values completely if their count is under '5' for example
             if model.get(states[row]):
                 if model.get(states[row]).get(states[item]):
-                    if int(model[states[row]][states[item]]["count"]) > 10:
+                    if int(model[states[row]][states[item]]["count"]) > 5:
                         by_error.append(
                             (states[row], states[item], error_list[row][item])
                         )
