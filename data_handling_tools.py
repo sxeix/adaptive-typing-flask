@@ -152,3 +152,13 @@ def find_users():
                 trimmed_files.append(file[:len(file)-5])
         return trimmed_files
     return []
+
+def load_stats(user: str):
+    stats_filename = f'/{user}_stats.json'
+    path = os.path.expanduser('~/Documents/AdaptiveTyping')
+    history = {}
+    if os.path.isfile(path+stats_filename):
+        with open(path+stats_filename, mode='r', encoding='UTF-8') as file:
+            stat_history = json.load(file)
+            history = stat_history
+    return history
