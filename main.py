@@ -44,6 +44,7 @@ def get_random_words():
 def get_tailored_words():
     response_json = request.get_json()
     user = response_json.get("user")
+    length = response_json.get("length")
     user_agent, expected_agent = get_current_user(user)
     app.logger.info(f"Generating wordset for {user}")
     error = calculate_error(expected_agent, user_agent)
@@ -57,8 +58,8 @@ def get_tailored_words():
             valid_set = False
     if valid_set:
         app.logger.info(focus_set)
-        return get_wordset(30, focus_set)
-    return get_wordset(30, [])
+        return get_wordset(length, focus_set)
+    return get_wordset(length, [])
 
 
 @app.route("/test-result", methods=["POST", "GET"])
