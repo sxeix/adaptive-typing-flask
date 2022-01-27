@@ -143,7 +143,7 @@ def get_data_lists(savedata):
 def find_users():
     # Need to test that if the logic fixes the issue listed on Github
     path = os.path.expanduser('~/Documents/AdaptiveTyping')
-    if os.path.exists(path) and len(listdir(path)) > 1:
+    if os.path.exists(path) and len(listdir(path)) > 0:
         files = listdir(path)
         trimmed_files = []
         for file in files:
