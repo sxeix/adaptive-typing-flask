@@ -1,20 +1,19 @@
 """
 Flask application for controlling communication to and from the UI of the AdaptiveTyping app
 """
-import logging
-
 from flask import Flask, request
+from flask.logging import create_logger
 from flask_cors import CORS
 
 from data_handling_tools import (find_users, get_data_lists, get_wordset,
-                                 load_user, preprocess_user_results, save_data,
-                                 load_stats)
+                                 load_stats, load_user,
+                                 preprocess_user_results, save_data)
 from markov import Markov, calculate_error, find_focus_sets
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
-logging.basicConfig(level=logging.DEBUG)
+log = create_logger(app)
 
 
 def get_current_user(user):
@@ -46,7 +45,7 @@ def get_tailored_words():
     user = response_json.get("user")
     length = response_json.get("length")
     user_agent, expected_agent = get_current_user(user)
-    app.logger.info(f"Generating wordset for {user}")
+    log.debug("Generated wordset for user%s",user)
     error = calculate_error(expected_agent, user_agent)
     focus_set = find_focus_sets(expected_agent, error)
     # Should be a good idea to ensure each combo in the focus_set certainly has a % more than 0
@@ -57,7 +56,7 @@ def get_tailored_words():
         if item[2] == 0:
             valid_set = False
     if valid_set:
-        app.logger.info(focus_set)
+        log.debug(focus_set)
         return get_wordset(length, focus_set)
     return get_wordset(length, [])
 
@@ -72,16 +71,16 @@ def test_results():
     user_agent, expected_agent = get_current_user(user)
     user_set, expected_set = preprocess_user_results(typed_words, test_words)
 
-    # app.logger.info(user_set)
-    # app.logger.info(expected_set)
+    # log.debug(user_set)
+    # log.debug(expected_set)
 
     user_agent.train(user_set)
     expected_agent.train(expected_set)
 
     error = calculate_error(expected_agent, user_agent)
     focus_set = find_focus_sets(expected_agent, error)
-    # app.logger.info(error)
-    # app.logger.info(focus_set)
+    # log.debug(error)
+    # log.debug(focus_set)
 
     response = {}
     response["result"] = "success"
@@ -90,7 +89,7 @@ def test_results():
     response["test_words"] = expected_set
     response["focus-sets"] = focus_set
 
-    app.logger.info(stats)
+    log.debug(stats)
     save_data(user, user_agent.get_history(), expected_agent.get_history(), stats)
 
     return response
@@ -111,7 +110,7 @@ def change_user():
 @app.route("/get-users")
 def get_users():
     user_list = find_users()
-    app.logger.info(user_list)
+    log.debug(user_list)
     response = {}
     response["users"] = user_list
     return response
