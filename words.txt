@@ -267,7 +267,7 @@ horse
 cut
 sure
 watch
-color
+colour
 face
 wood
 main
@@ -803,7 +803,7 @@ necessary
 sharp
 wing
 create
-neighbor
+neighbour
 wash
 bat
 rather
