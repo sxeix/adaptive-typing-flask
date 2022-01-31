@@ -8,6 +8,7 @@ import random
 import re
 from difflib import SequenceMatcher
 from os import listdir
+from words import wordset
 
 
 def get_wordset(length: int, focus_set: list):
@@ -65,11 +66,7 @@ def get_tailored_words(focus_set: list, length: int):
 
 
 def read_words():
-    words = []
-    with open("words.txt", "r", encoding='UTF-8') as file:
-        words = file.readlines()
-        words = [word.rstrip() for word in words]
-    return words
+    return wordset
 
 
 def preprocess_user_results(typed: list, expected: list):
